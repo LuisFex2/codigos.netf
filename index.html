@@ -104,10 +104,15 @@
                 <div class="netflix-demo">
                     <div class="netflix-logo">NETFLIX</div>
                     
-                    <div class="demo-form">
+                    <!-- Added netflix-form class and emailError div -->
+                    <div class="demo-form netflix-form">
                         <h4>Correo Electrónico</h4>
                         <input type="email" class="demo-input" placeholder="Escribir correo aquí" id="emailInput">
-                        <button class="demo-btn" onclick="showEmailDemo()">Enviar</button>
+                        <button class="demo-btn">Enviar</button>
+                        
+                        <div class="error-message" id="emailError" style="display: none;">
+                            <strong></strong>
+                        </div>
                         
                         <div class="valid-emails">
                             <h5>CORREOS VÁLIDOS PARA CONSULTA</h5>
