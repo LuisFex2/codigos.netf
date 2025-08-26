@@ -18,7 +18,10 @@ const emailError = document.getElementById("emailError")
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   phoneForm.addEventListener("submit", handleSubmit)
-  emailButton.addEventListener("click", showEmailDemo)
+
+  if (emailButton) {
+    emailButton.addEventListener("click", showEmailDemo)
+  }
 
   // Limpiar mensajes cuando el usuario empiece a escribir
   phoneNumber.addEventListener("input", () => {
