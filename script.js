@@ -44,9 +44,9 @@ async function handleSubmit(e) {
 
     console.log("[v0] Verificando número:", fullPhone)
 
-    // Llamar a la API
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://script.google.com/macros/s/AKfycbyZIvkn6W0kXBzEVdroLWD09CZKxvegvylkB1_mlXpHkJoeCj8sBM5QhA28WoOviARe/exec?telefono=${fullPhone}`,
+      8000,
     )
 
     if (!response.ok) {
@@ -56,22 +56,7 @@ async function handleSubmit(e) {
     const data = await response.json()
     console.log("[v0] Respuesta de la API:", data)
 
-    // Buscar el cliente en la respuesta
-    let foundClient = null
-
-    if (Array.isArray(data)) {
-      // Si la respuesta es un array, buscar el teléfono
-      foundClient = data.find((client) => {
-        const clientPhone = client.Telefono?.toString().replace(/\+/g, "")
-        return clientPhone === fullPhone
-      })
-    } else if (data.Cliente && data.Telefono) {
-      // Si la respuesta es un objeto único
-      const clientPhone = data.Telefono.toString().replace(/\+/g, "")
-      if (clientPhone === fullPhone) {
-        foundClient = data
-      }
-    }
+    const foundClient = findClientOptimized(data, fullPhone)
 
     hideLoading()
 
@@ -85,8 +70,56 @@ async function handleSubmit(e) {
   } catch (error) {
     console.error("[v0] Error en la verificación:", error)
     hideLoading()
-    showError("Error al verificar el número. Inténtalo de nuevo.")
+
+    if (error.name === "TimeoutError") {
+      showError("La verificación está tardando mucho. Inténtalo de nuevo.")
+    } else {
+      showError("Error al verificar el número. Inténtalo de nuevo.")
+    }
   }
+}
+
+async function fetchWithTimeout(url, timeout = 8000) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: "no-cache", // Evitar cache para datos actualizados
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error.name === "AbortError") {
+      const timeoutError = new Error("Request timeout")
+      timeoutError.name = "TimeoutError"
+      throw timeoutError
+    }
+    throw error
+  }
+}
+
+function findClientOptimized(data, fullPhone) {
+  if (Array.isArray(data)) {
+    // Búsqueda optimizada en array
+    for (let i = 0; i < data.length; i++) {
+      const client = data[i]
+      if (client.Telefono) {
+        const clientPhone = client.Telefono.toString().replace(/\+/g, "")
+        if (clientPhone === fullPhone) {
+          return client
+        }
+      }
+    }
+    return null
+  } else if (data.Cliente && data.Telefono) {
+    // Si la respuesta es un objeto único
+    const clientPhone = data.Telefono.toString().replace(/\+/g, "")
+    return clientPhone === fullPhone ? data : null
+  }
+  return null
 }
 
 function showLoading() {
@@ -95,6 +128,8 @@ function showLoading() {
   submitBtn.disabled = true
   submitBtn.textContent = "Verificando..."
   hideError()
+
+  submitBtn.style.opacity = "0.7"
 }
 
 function hideLoading() {
@@ -102,6 +137,7 @@ function hideLoading() {
   loading.style.display = "none"
   submitBtn.disabled = false
   submitBtn.textContent = "Verificar Acceso"
+  submitBtn.style.opacity = "1"
 }
 
 function showError(message) {
