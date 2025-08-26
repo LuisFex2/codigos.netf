@@ -79,7 +79,7 @@ async function handleSubmit(e) {
   }
 }
 
-async function fetchWithTimeout(url, timeout = 8000) {
+async function fetchWithTimeout(url, timeout = 4000) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
