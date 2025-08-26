@@ -335,7 +335,7 @@ body {
 }
 
 .email-tag {
-  background: #4caf50;
+  background: #2196f3; /* Changed from green to blue to avoid confusion with WhatsApp button */
   color: white;
   padding: 5px 12px;
   border-radius: 20px;
