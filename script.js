@@ -83,7 +83,7 @@ async function handleSubmit(e) {
   }
 }
 
-async function fetchWithTimeout(url, timeout = 8000) {
+async function fetchWithTimeout(url, timeout = 4000) {
   // Cambié el valor por defecto de 8000 a 4000
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
@@ -191,8 +191,8 @@ async function showEmailDemo() {
     console.log("[v0] Verificando correo:", email)
 
     const response = await fetchWithTimeout(
-      `https://script.google.com/macros/s/TU_API_DE_CORREO/exec?email=${encodeURIComponent(email)}`,
-      4000,
+      `https://script.google.com/macros/s/AKfycbw1vpPONFAgRxOV835iDKVXLVf06-ljvuYQtfWOs358jXQneOFLuXfmD7WbwCwmf0_4bQ/exec?email=${encodeURIComponent(email)}`,
+      8000,
     )
 
     if (!response.ok) {
@@ -207,11 +207,12 @@ async function showEmailDemo() {
     emailButton.textContent = "Enviar"
     emailButton.style.opacity = "1"
 
-    if (data.error || data.mensaje_error) {
+    if (data.success === false) {
       // Mostrar mensaje de error de la API
-      showEmailError(data.error || data.mensaje_error || "No se encontraron correos para el destinatario especificado.")
-    } else if (data.success || data.buzon || data.mensaje) {
-      showWhatsAppButton(email)
+      showEmailError(data.message || "No se encontraron correos para el destinatario especificado.")
+    } else if (data.success === true) {
+      // Mostrar botón de WhatsApp con el mensaje completo
+      showWhatsAppButton(email, data.message)
     } else {
       showEmailError("Respuesta inesperada del servidor")
     }
@@ -244,7 +245,7 @@ function hideEmailError() {
   }
 }
 
-function showWhatsAppButton(email) {
+function showWhatsAppButton(email, apiMessage) {
   hideEmailError()
 
   // Crear o mostrar botón de WhatsApp
@@ -283,15 +284,20 @@ function showWhatsAppButton(email) {
 
   whatsappButton.style.display = "block"
 
-  whatsappButton.onclick = () => openWhatsApp(email)
+  whatsappButton.onclick = () => openWhatsApp(email, apiMessage)
 }
 
-function openWhatsApp(email) {
-  // Mensaje predefinido para WhatsApp
-  const message = `Hola! He verificado mi correo: ${email} y necesito acceso al contenido premium.`
+function openWhatsApp(email, apiMessage) {
+  // Obtener el número de teléfono del cliente que ingresó inicialmente
+  const clientPhone = phoneNumber.value.trim()
+  const country = countryCode.value
+  const fullClientPhone = country + clientPhone
 
-  // URL de WhatsApp con mensaje predefinido
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+  // Mensaje completo de la API para enviar por WhatsApp
+  const whatsappMessage = `Correo verificado: ${email}\n\n${apiMessage}`
+
+  // URL de WhatsApp con el número del cliente y el mensaje completo
+  const whatsappUrl = `https://wa.me/${fullClientPhone.replace("+", "")}?text=${encodeURIComponent(whatsappMessage)}`
 
   // Abrir WhatsApp en nueva ventana
   window.open(whatsappUrl, "_blank")
