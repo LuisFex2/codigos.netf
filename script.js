@@ -11,10 +11,14 @@ const errorMessage = document.getElementById("errorMessage")
 const verificationSection = document.getElementById("verificationSection")
 const premiumContent = document.getElementById("premiumContent")
 const clientName = document.getElementById("clientName")
+const emailInput = document.getElementById("emailInput")
+const emailButton = document.querySelector(".netflix-form button")
+const emailError = document.getElementById("emailError")
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   phoneForm.addEventListener("submit", handleSubmit)
+  emailButton.addEventListener("click", showEmailDemo)
 
   // Limpiar mensajes cuando el usuario empiece a escribir
   phoneNumber.addEventListener("input", () => {
@@ -46,7 +50,7 @@ async function handleSubmit(e) {
 
     const response = await fetchWithTimeout(
       `https://script.google.com/macros/s/AKfycbyZIvkn6W0kXBzEVdroLWD09CZKxvegvylkB1_mlXpHkJoeCj8sBM5QhA28WoOviARe/exec?telefono=${fullPhone}`,
-      8000,
+      4000, // Cambié de 8000 a 4000 milisegundos (4 segundos)
     )
 
     if (!response.ok) {
@@ -79,7 +83,8 @@ async function handleSubmit(e) {
   }
 }
 
-async function fetchWithTimeout(url, timeout = 8000) {
+async function fetchWithTimeout(url, timeout = 4000) {
+  // Cambié el valor por defecto de 8000 a 4000
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -152,6 +157,7 @@ function hideError() {
 function hideMessages() {
   hideError()
   hideLoading()
+  hideEmailError()
 }
 
 function showPremiumContent(cliente) {
@@ -167,29 +173,134 @@ function showPremiumContent(cliente) {
 }
 
 // Función para la demo de email
-function showEmailDemo() {
-  const emailInput = document.getElementById("emailInput")
+async function showEmailDemo() {
   const email = emailInput.value.trim()
 
   if (!email) {
-    alert("Por favor ingresa un correo electrónico")
+    showEmailError("Por favor ingresa un correo electrónico")
     return
   }
 
-  // Validar dominios permitidos
-  const validDomains = ["@legalnetf.com", "@gmail.com", "@legalclub.com.co"]
-  const isValidDomain = validDomains.some((domain) => email.includes(domain))
+  // Mostrar loading en el botón de email
+  emailButton.disabled = true
+  emailButton.textContent = "Verificando..."
+  emailButton.style.opacity = "0.7"
+  hideEmailError()
 
-  if (isValidDomain) {
-    alert(`✅ Correo válido: ${email}\nProcediendo con la verificación...`)
-  } else {
-    alert(`❌ Dominio no válido. Usa uno de estos dominios:\n${validDomains.join("\n")}`)
+  try {
+    console.log("[v0] Verificando correo:", email)
+
+    const response = await fetchWithTimeout(
+      `https://script.google.com/macros/s/TU_API_DE_CORREO/exec?email=${encodeURIComponent(email)}`,
+      4000,
+    )
+
+    if (!response.ok) {
+      throw new Error("Error en la respuesta del servidor")
+    }
+
+    const data = await response.json()
+    console.log("[v0] Respuesta de la API de correo:", data)
+
+    // Restaurar botón
+    emailButton.disabled = false
+    emailButton.textContent = "Enviar"
+    emailButton.style.opacity = "1"
+
+    if (data.error || data.mensaje_error) {
+      // Mostrar mensaje de error de la API
+      showEmailError(data.error || data.mensaje_error || "No se encontraron correos para el destinatario especificado.")
+    } else if (data.success || data.buzon || data.mensaje) {
+      showWhatsAppButton(email)
+    } else {
+      showEmailError("Respuesta inesperada del servidor")
+    }
+  } catch (error) {
+    console.error("[v0] Error en la verificación de correo:", error)
+
+    // Restaurar botón
+    emailButton.disabled = false
+    emailButton.textContent = "Enviar"
+    emailButton.style.opacity = "1"
+
+    if (error.name === "TimeoutError") {
+      showEmailError("La verificación está tardando mucho. Inténtalo de nuevo.")
+    } else {
+      showEmailError("Error al verificar el correo. Inténtalo de nuevo.")
+    }
   }
+}
+
+function showEmailError(message) {
+  if (emailError) {
+    emailError.style.display = "block"
+    emailError.textContent = message
+  }
+}
+
+function hideEmailError() {
+  if (emailError) {
+    emailError.style.display = "none"
+  }
+}
+
+function showWhatsAppButton(email) {
+  hideEmailError()
+
+  // Crear o mostrar botón de WhatsApp
+  let whatsappButton = document.getElementById("whatsappButton")
+
+  if (!whatsappButton) {
+    whatsappButton = document.createElement("button")
+    whatsappButton.id = "whatsappButton"
+    whatsappButton.innerHTML = "📱 Abrir en WhatsApp"
+    whatsappButton.style.cssText = `
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+      transition: background-color 0.3s;
+    `
+
+    whatsappButton.addEventListener("mouseover", () => {
+      whatsappButton.style.backgroundColor = "#128C7E"
+    })
+
+    whatsappButton.addEventListener("mouseout", () => {
+      whatsappButton.style.backgroundColor = "#25D366"
+    })
+
+    // Insertar después del formulario de Netflix
+    const netflixForm = document.querySelector(".netflix-form")
+    netflixForm.appendChild(whatsappButton)
+  }
+
+  whatsappButton.style.display = "block"
+
+  whatsappButton.onclick = () => openWhatsApp(email)
+}
+
+function openWhatsApp(email) {
+  // Mensaje predefinido para WhatsApp
+  const message = `Hola! He verificado mi correo: ${email} y necesito acceso al contenido premium.`
+
+  // URL de WhatsApp con mensaje predefinido
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+
+  // Abrir WhatsApp en nueva ventana
+  window.open(whatsappUrl, "_blank")
 }
 
 // Función para limpiar el formulario
 function resetForm() {
   phoneNumber.value = ""
+  emailInput.value = ""
   hideMessages()
   premiumContent.style.display = "none"
   verificationSection.style.display = "block"
