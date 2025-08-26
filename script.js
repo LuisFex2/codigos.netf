@@ -50,7 +50,7 @@ async function handleSubmit(e) {
 
     const response = await fetchWithTimeout(
       `https://script.google.com/macros/s/AKfycbyZIvkn6W0kXBzEVdroLWD09CZKxvegvylkB1_mlXpHkJoeCj8sBM5QhA28WoOviARe/exec?telefono=${fullPhone}`,
-      4000, // Cambié de 8000 a 4000 milisegundos (4 segundos)
+      10000,
     )
 
     if (!response.ok) {
@@ -76,15 +76,14 @@ async function handleSubmit(e) {
     hideLoading()
 
     if (error.name === "TimeoutError") {
-      showError("La verificación está tardando mucho. Inténtalo de nuevo.")
+      showError("La verificación está tardando más de 10 segundos. Inténtalo de nuevo.")
     } else {
       showError("Error al verificar el número. Inténtalo de nuevo.")
     }
   }
 }
 
-async function fetchWithTimeout(url, timeout = 8000) {
-  // Cambié el valor por defecto de 8000 a 4000
+async function fetchWithTimeout(url, timeout = 10000) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -192,7 +191,7 @@ async function showEmailDemo() {
 
     const response = await fetchWithTimeout(
       `https://script.google.com/macros/s/AKfycbw1vpPONFAgRxOV835iDKVXLVf06-ljvuYQtfWOs358jXQneOFLuXfmD7WbwCwmf0_4bQ/exec?email=${encodeURIComponent(email)}`,
-      8000,
+      10000,
     )
 
     if (!response.ok) {
@@ -225,7 +224,7 @@ async function showEmailDemo() {
     emailButton.style.opacity = "1"
 
     if (error.name === "TimeoutError") {
-      showEmailError("La verificación está tardando mucho. Inténtalo de nuevo.")
+      showEmailError("La verificación está tardando más de 10 segundos. Inténtalo de nuevo.")
     } else {
       showEmailError("Error al verificar el correo. Inténtalo de nuevo.")
     }
