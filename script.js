@@ -46,7 +46,7 @@ async function handleSubmit(e) {
 
     const response = await fetchWithTimeout(
       `https://script.google.com/macros/s/AKfycbyZIvkn6W0kXBzEVdroLWD09CZKxvegvylkB1_mlXpHkJoeCj8sBM5QhA28WoOviARe/exec?telefono=${fullPhone}`,
-      4000, // Cambié de 8000 a 4000 milisegundos (4 segundos)
+      8000,
     )
 
     if (!response.ok) {
@@ -79,8 +79,7 @@ async function handleSubmit(e) {
   }
 }
 
-async function fetchWithTimeout(url, timeout = 4000) {
-  // Cambié el valor por defecto de 8000 a 4000
+async function fetchWithTimeout(url, timeout = 8000) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
