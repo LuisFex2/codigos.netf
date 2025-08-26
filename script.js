@@ -15,6 +15,16 @@ const emailInput = document.getElementById("emailInput")
 const emailButton = document.querySelector(".netflix-form button")
 const emailError = document.getElementById("emailError")
 
+// Funciones auxiliares
+function hideEmailError() {
+  emailError.style.display = "none"
+}
+
+function showEmailError(message) {
+  emailError.style.display = "block"
+  emailError.querySelector("strong").textContent = "❌ " + message
+}
+
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   phoneForm.addEventListener("submit", handleSubmit)
@@ -192,17 +202,30 @@ async function showEmailDemo() {
   try {
     console.log("[v0] Verificando correo:", email)
 
-    const response = await fetchWithTimeout(
-      `https://script.google.com/macros/s/AKfycbw1vpPONFAgRxOV835iDKVXLVf06-ljvuYQtfWOs358jXQneOFLuXfmD7WbwCwmf0_4bQ/exec?email=${encodeURIComponent(email)}`,
-      10000,
-    )
+    const apiUrl = `https://script.google.com/macros/s/AKfycbw1vpPONFAgRxOV835iDKVXLVf06-ljvuYQtfWOs358jXQneOFLuXfmD7WbwCwmf0_4bQ/exec?email=${encodeURIComponent(email)}`
+    console.log("[v0] URL de la API de correo:", apiUrl)
+
+    const response = await fetchWithTimeout(apiUrl, 10000)
+
+    console.log("[v0] Status de respuesta:", response.status)
+    console.log("[v0] Headers de respuesta:", response.headers)
 
     if (!response.ok) {
-      throw new Error("Error en la respuesta del servidor")
+      throw new Error(`Error HTTP: ${response.status}`)
     }
 
-    const data = await response.json()
-    console.log("[v0] Respuesta de la API de correo:", data)
+    const responseText = await response.text()
+    console.log("[v0] Respuesta cruda de la API:", responseText)
+
+    let data
+    try {
+      data = JSON.parse(responseText)
+      console.log("[v0] Respuesta parseada de la API de correo:", data)
+    } catch (parseError) {
+      console.error("[v0] Error al parsear JSON:", parseError)
+      console.log("[v0] Respuesta no es JSON válido:", responseText)
+      throw new Error("La respuesta del servidor no es JSON válido")
+    }
 
     // Restaurar botón
     emailButton.disabled = false
@@ -211,11 +234,14 @@ async function showEmailDemo() {
 
     if (data.success === false) {
       // Mostrar mensaje de error de la API
+      console.log("[v0] API devolvió error:", data.message)
       showEmailError(data.message || "No se encontraron correos para el destinatario especificado.")
     } else if (data.success === true) {
       // Mostrar botón de WhatsApp con el mensaje completo
+      console.log("[v0] API devolvió éxito, creando botón de WhatsApp")
       showWhatsAppButton(email, data.message)
     } else {
+      console.log("[v0] Respuesta inesperada:", data)
       showEmailError("Respuesta inesperada del servidor")
     }
   } catch (error) {
@@ -229,64 +255,23 @@ async function showEmailDemo() {
     if (error.name === "TimeoutError") {
       showEmailError("La verificación está tardando más de 10 segundos. Inténtalo de nuevo.")
     } else {
-      showEmailError("Error al verificar el correo. Inténtalo de nuevo.")
+      showEmailError(`Error al verificar el correo: ${error.message}`)
     }
-  }
-}
-
-function showEmailError(message) {
-  if (emailError) {
-    emailError.style.display = "block"
-    emailError.textContent = message
-  }
-}
-
-function hideEmailError() {
-  if (emailError) {
-    emailError.style.display = "none"
   }
 }
 
 function showWhatsAppButton(email, apiMessage) {
   hideEmailError()
 
-  // Crear o mostrar botón de WhatsApp
-  let whatsappButton = document.getElementById("whatsappButton")
+  const whatsappContainer = document.getElementById("whatsappContainer")
+  const whatsappButton = document.getElementById("whatsappButton")
 
-  if (!whatsappButton) {
-    whatsappButton = document.createElement("button")
-    whatsappButton.id = "whatsappButton"
-    whatsappButton.innerHTML = "📱 Abrir en WhatsApp"
-    whatsappButton.style.cssText = `
-      background: #25D366;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 15px;
-      width: 100%;
-      transition: background-color 0.3s;
-    `
+  if (whatsappContainer && whatsappButton) {
+    whatsappContainer.style.display = "block"
 
-    whatsappButton.addEventListener("mouseover", () => {
-      whatsappButton.style.backgroundColor = "#128C7E"
-    })
-
-    whatsappButton.addEventListener("mouseout", () => {
-      whatsappButton.style.backgroundColor = "#25D366"
-    })
-
-    // Insertar después del formulario de Netflix
-    const netflixForm = document.querySelector(".netflix-form")
-    netflixForm.appendChild(whatsappButton)
+    // Update the click handler
+    whatsappButton.onclick = () => openWhatsApp(email, apiMessage)
   }
-
-  whatsappButton.style.display = "block"
-
-  whatsappButton.onclick = () => openWhatsApp(email, apiMessage)
 }
 
 function openWhatsApp(email, apiMessage) {
