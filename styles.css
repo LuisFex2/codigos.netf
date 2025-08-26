@@ -317,6 +317,33 @@ body {
   background: #f40612;
 }
 
+.whatsapp-btn {
+  width: 100%;
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.whatsapp-btn:hover {
+  background: #128c7e;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn:active {
+  transform: translateY(0);
+}
+
 .valid-emails {
   margin-top: 20px;
   text-align: center;
@@ -424,6 +451,11 @@ body {
   .submit-btn {
     padding: 14px;
     font-size: 1rem;
+  }
+
+  .whatsapp-btn {
+    padding: 10px;
+    font-size: 0.9rem;
   }
 
   .content-grid {
