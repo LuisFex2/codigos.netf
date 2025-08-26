@@ -11,7 +11,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
 }
 
 .container {
@@ -22,6 +22,7 @@ body {
   width: 100%;
   max-width: 1200px;
   min-height: 600px;
+  margin: 0 auto;
 }
 
 .verification-section {
@@ -35,6 +36,7 @@ body {
   font-size: 2.5rem;
   margin-bottom: 10px;
   font-weight: bold;
+  line-height: 1.2;
 }
 
 .verification-section p {
@@ -70,6 +72,7 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  align-items: stretch;
 }
 
 .country-select {
@@ -370,33 +373,160 @@ body {
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 5px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
   .container {
-    margin: 10px;
+    margin: 0;
+    border-radius: 15px;
+    min-height: auto;
   }
 
   .verification-section {
-    padding: 30px 20px;
+    padding: 25px 15px;
   }
 
   .verification-section h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    line-height: 1.1;
+  }
+
+  .verification-section p {
+    font-size: 1rem;
+    margin-bottom: 25px;
   }
 
   .form-container {
-    padding: 20px;
-    margin: 10px;
+    padding: 20px 15px;
+    margin: 15px 10px;
+    border-radius: 12px;
   }
 
-  .content-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
+  .form-title {
+    font-size: 1.3rem;
   }
 
   .input-group {
     flex-direction: column;
+    gap: 12px;
   }
 
-  .country-select {
+  .country-select,
+  .phone-input {
     width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .submit-btn {
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .premium-header h2 {
+    font-size: 2rem;
+  }
+
+  .premium-header p {
+    font-size: 1rem;
+  }
+
+  .instructions {
+    padding: 20px 15px;
+  }
+
+  .instructions h3 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+
+  .instruction-item {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+
+  .step-number {
+    width: 25px;
+    height: 25px;
+    font-size: 0.9rem;
+  }
+
+  .netflix-demo {
+    padding: 15px;
+  }
+
+  .netflix-logo {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+  }
+
+  .demo-form {
+    padding: 20px 15px;
+  }
+
+  .demo-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 10px;
+  }
+
+  .email-tags {
+    gap: 6px;
+  }
+
+  .email-tag {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verification-section h1 {
+    font-size: 1.6rem;
+  }
+
+  .verification-section p {
+    font-size: 0.95rem;
+  }
+
+  .form-container {
+    margin: 10px 5px;
+    padding: 15px 12px;
+  }
+
+  .premium-content {
+    padding: 25px 15px;
+  }
+
+  .instructions {
+    padding: 15px 12px;
+  }
+
+  .instruction-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .step-number {
+    align-self: center;
+    margin-right: 0;
+    margin-bottom: 5px;
+  }
+
+  .netflix-logo {
+    font-size: 1.8rem;
+  }
+
+  .email-tags {
+    flex-direction: column;
+    align-items: center;
   }
 }
